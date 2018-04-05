@@ -15,43 +15,52 @@ import java.util.ArrayList.*;
 %unicode
 %line
 %column
+%ignorecase
 %type String
+
 
 //Codigo Java
 
 %init{ 
-this.tokensList = new ArrayList();
+this.tokens = new ArrayList();
+this.errores = new ArrayList();
+this.fin = false;
 %init}
 
 %{
 
-private ArrayList tokensList; /* our variable for storing token's info that will be the output */
+public ArrayList tokens; /* our variable for storing token's info that will be the output */
+public ArrayList errores;
+public boolean fin;
 
-private void writeOutputFile() throws IOException { /* our method for writing the output file */
-	String filename = "file.out";
-	BufferedWriter out = new BufferedWriter(new FileWriter(filename));
-	for (String s:this.tokensList) {
-		System.out.println(s);
-		out.write(s + "\n");
-	}
-	out.close();
+private String tokenRecordSet(String token){
+    String[] parts = token.split("'");
+    String tokenCorrecto = parts[0].toLowerCase() + "'" + parts[1].toUpperCase() + "'" + parts[2];
+    return tokenCorrecto;
 }
 
 %}
 
 //Macro Definition
 
+//SIMBOLOS QUE UTILIZA PHP
+Simbolos = "{" | "}" | ":" | ";" | "," | "(" | ")" | "." | "@" | "<>"
+
+//ESPACIOS Y SALTOS
+
+Espacios = (" ") | (\x09)
+Saltos = (\n) | (\r) | (\n\r)
+
 //PALABRAS RESERVADAS
 
-Nulo = [nN][uU][lL][lL]
-Etiquetas = "<?"[pP][hH][pP] | "?>"
-PalabrasReservadas = [pP][rR][iI][vV][aA][tT][eE] | [pP][uU][bB][lL][iI][cC] |[aA][sS] | [cC][lL][aA][sS][sS] |
-					[eE][cC][hH][oO] | [pP][rR][iI][nN][tT] | [gG][oO][tT][oO] | [tT][rR][yY] | [sS][tT][aA][tT][iI][cC] |
-					[pP][rR][oO][tT][eE][cC][tT][eE][dD] | [nN][eE][wW] | [vV][aA][rR] | [cC][aA][tT][cC][hH] |
-					[aA][bB][sS][tT][rR][aA][cC][tT] | [cC][lL][oO][nN][eE] | [cC][oO][nN][sS][tT] | [eE][nN][dD][fF][oO][rR] |
-					[fF][iI][nN][aA][lL] | [gG][lL][oO][bB][aA][lL] | [iI][mM][pP][lL][eE][mM][eE][nN][tT][sS] |
-					[iI][nN][cC][lL][uU][dD][eE] | [iI][nN][tT][eE][rR][fF][aA][sS][eE] | [tT][hH][rR][oO][wW] | [uU][sS][eE] |
-					
+Nulo = "null"
+Etiquetas = "<?php" | "?>"
+PalabrasReservadas = "__halt_compiler" | "abstract" | "array" | "as" | "callable" | "catch" | "class" |
+                     "clone" | "const" | "die" | "echo" | "empty" | "enddeclare" | "eval" | "exit" |
+                     "extends" | "final" | "finally" | "function" | "global" | "goto" | "implements" |
+                     "include_once" | "instanceof" | "insteadof" | "interface" | "isset" | "list" |
+                     "namespace" | "new" | "print" | "private" | "protected" | "public" | " require_once" |
+                     "static" | "throw" | "trait" | "try" | "unset" | "use" | "var" | "yield"
 
 //TIPOS
 
@@ -68,89 +77,95 @@ Lnum = [0-9]+
 Dnum = ([0-9]*[\.]{Lnum}) |({Lnum}[\.][0-9]*)
 Exponente = [+-]?(({Lnum} | {Dnum}) [eE][+-]?{Lnum})
 
+Reales = {Lnum} | {Dnum} | {Exponente}
+
 /*  Logicos */
 
-Verdadero = [tT][rR][uU][eE]
-Falso = [fF][aA][lL][sS][eE]
+Logicos = "true" | "false"
 
 /*  Cadenas */
-Cadenas = [\x20-\xff]{0,256}
+CadenasSimple = [\'][\x20-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]{0,256}[\']
+CadenasDobles = [\"][\x20-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]{0,256}[\"]
+Cadenas = {CadenasSimple} | {CadenasDobles}
 
 //OPERADORES 
 
 /*  Aritmeticos */
-
 OpAritmeticos = "*" | "+" | "-" | "/" | "%" | "**"
-
 /*  Logicos */
-OpLogicos = [aA][nN][dD]] | [oO][rR] | [xX][oO][rR] | "!" | "&&" | "||"
-
+OpLogicos = "and" | "or" | "xor" | "!" | "&&" | "||"
 /*  Otros   */
 Asignacion = "="
-Concatenacion = "."
 OpBitaBit = "&" | "|" | "^" | "~" | "<<" | ">>"
 OpComparacion = "==" | "===" | "!=" | "!==" | "<" | ">" | "<=" | ">=" | "<=>" | "??"
-OpControlError = "@"
 OpIncremento = "++" | "--"
-OpTipo = [iI][nN][sS][tT][aA][nN][cC][eE][oO][fF]
-OpArray = "<>"
 OpCompuestos = {OpAritmeticos}{Asignacion} | {OpBitaBit}{Asignacion} | {Concatenacion}{Asignacion}
 
-/*  CONSTANTES  */
+Operadores = {OpAritmeticos} | {OpLogicos} | {Asignacion} | {OpBitaBit} | {OpComparacion} | {OpIncremento} | {OpCompuestos}
 
-IdConstantes = [a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
+/*  CONSTANTES  */
+Identificador = [a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
 
 /*  VARIABLES  */
-
-Variables = [$]{IdConstantes}
+Variables = [\$]{Identificador}
 
 /* Variables predefinidas   */
+VariablesSuperGlobales = ([\$])("GLOBALS" | "_SERVER" | "_GET" | "_POST" | "_FILES" | "_REQUEST" | "_SESSION" | "_ENV" | "_COOKIE" | "HTTP_RAW_POST_DATA") 
+VariablesGlobalesMin = ([\$])("php_errormsg" | "http_response_header" | "argc" | "argv")
 
-VariablesSuperGlobales= ([$])([gG][lL][oO][bB][aA][lL][sS] | [_][sS][eE][rR][vV][eE][rR] | [_][gG][eE][tT] | [_][pP][oO][sS][tT] | [_][fF][iI][lL][eE][sS] | [_][cC][oO][oO][kK][iI][eE] | [_][sS][eE][sS][sS][iI][oO][nN] | [_][rR][eE][qQ][uU][eE][sS][tT] | [_][eE][nN][vV]) 
-OtrasVariablesM = ([$])([hH][tT][tT][pP][_][rR][aA][wW][_][pP][oO][sS][tT][_][dD][aA][tT][aA])
-OtrasVariablesm = ([$])([pP][hH][pP][_][eE][rR][rR][oO][rR][mM][sS][gG] | [hH][tT][tT][pP][_][rR][eE][sS][pP][oO][nN][sS][eE][_][hH][eE][aA][dD][eE][rR] | [aA][rR][gG][cC] | [aA][rR][gG][vV])
+/*  Constantes predefinidas */
+ConstantesReservadas = "__LINE__" | "__FILE__" | "__DIR__" | "__FUNCTION__" | "__CLASS__" | "__TRAIT__" | "__METHOD__" | "__NAMESPACE__"
 
 /*  Estructuras de control  */
 
-SimbolosLlaves = "{" | "}" | ":"
-SimbolosParentesis = "(" | ")"
-
 /* If-else  */
-EstructuraIf = [iI][fF] | [eE][nN][dD][iI][fF]
-EstructuraElse = [eE][lL][sS][eE]
-EstructuraElseIf = {EstructuraElse}{EstructuraIf} | {EstructuraElse}[" "]{EstructuraIf}
-
+EstructuraIf = "if" | "endif" | "else" 
 /*  Ciclo-While */
-CicloWhile = [wW][hH][iI][lL][eE] | [eE][nN][dD][wW][hH][iI][lL][eE]
-
+CicloWhile = "while" | "endwhile"
 /*  Ciclo-Do-While */
-CicloDoWhile = [dD][oO]
-
+CicloDoWhile = "do"
 /*  Ciclo-For   */
-CicloFor = [fF][oO][rR]
-
+CicloFor = "for" | "endfor"
 /*  Foreach */
-CicloForeach = {CicloFor}[eE][aA][cC][hH]
-
+CicloForeach = "foreach" | "endforeach"
 /* Switch */
-EstructuraSwitch = [sS][wW][iI][tT][cC][hH] | [cC][aA][sS][eE] | [dD][eE][fF][aA][uU][lL][tT] | [eE][nN][dD][sS][wW][iI][tT][cC][hH]
-
+EstructuraSwitch = "switch" | "case" | "default" | "endswitch"
 /*  Sentencias de control de las estructuras     */
+SentenciasControl = "break" | "continue" | "return" | "declare" | "include" | "require"
 
-SentenciasControl = [bB][rR][eE][aA][kK] | [cC][oO][nN][tT][iI][nN][uU][eE] | [rR][eE][tT][uU][rR][nN] | [dD][eE][cC][lL][aA][rR][eE] | [iI][nN][cC][lL][uU][dD][eE]  [rR][eE][qQ][uU][iI][rR][eE]
-
-/*	FUNCIONES	*/
-
-ERFunciones = [fF][uU][nN][cC][tT][iI][oO][nN]
+EstructurasControl = {EstructuraIf} | {CicloWhile} | {CicloDoWhile} | {CicloFor} | {CicloForeach} | {EstructuraSwitch} | {SentenciasControl}
 
 /*	Comentarios	*/
-
-Texto = [\x20-\xff\x09\x0D]*
+Texto = [\x20-\xff\x09\x0D\x0A\x0B\x1B\x0C]*
 Comentarios = "/*"{Texto}"*/" | "//"{Texto}[\x0A] | "#"{Texto}[\x0A]
+
+/*  Campo de acceso a base de datos */
+RecordSet = [\$]("recordset[")({CadenasSimple})("]")
 
 %%
 
 /* Lexical rules */
 
+{Integer}                   {this.tokens.add(yytext());}
+{Reales}                    {this.tokens.add(yytext());}
+{Logicos}                   {this.tokens.add(yytext().toUpperCase());}
+{Cadenas}                   {this.tokens.add(yytext());}
+{Operadores}                {this.tokens.add(yytext());}
+{Identificador}             {this.tokens.add(yytext());}
+{Variables}                 {this.tokens.add(yytext());}
+{VariablesSuperGlobales}    {this.tokens.add(yytext().toUpperCase());}
+{VariablesGlobalesMin}      {this.tokens.add(yytext().toLowerCase());}
+{ConstantesReservadas}      {this.tokens.add(yytext().toUpperCase());}
+{EstructurasControl}        {this.tokens.add(yytext().toLowerCase());}
+{Comentarios}               {this.tokens.add(yytext());}
+{Espacios}                  {this.tokens.add(yytext());}
+{Saltos}                    {this.tokens.add(yytext());}
+{Nulo}                      {this.tokens.add(yytext().toUpperCase());}
+{PalabrasReservadas}        {this.tokens.add(yytext().toLowerCase());}
+{Etiquetas}                 {this.tokens.add(yytext().toLowerCase());}
+{Simbolos}                  {this.tokens.add(yytext());}
+{RecordSet}                 {this.tokens.add(this.tokenRecordSet(yytext()));}
 
-{Integer} {}
+.                           {this.errores.add("ERROR: [" + yyline + "," + yycolumn + "] Token: " + yytext());}
+
+<< EOF >>                   {this.fin = true}

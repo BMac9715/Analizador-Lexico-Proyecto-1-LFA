@@ -49,41 +49,39 @@ public class InterfazGrafica extends javax.swing.JFrame {
             }
         });
 
-        lblCargarArchivo.setText("Cargar Archivo PHP");
+        lblCargarArchivo.setText("Compilar Archivo Lexer");
 
-        lblEscaner.setText("Escanear archivo");
+        lblEscaner.setText("Escanear archivo PHP");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(78, 78, 78)
-                        .addComponent(btnCargarArchivo, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(75, 75, 75)
-                        .addComponent(btnEscaner, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(67, 67, 67)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblEscaner)
-                            .addComponent(lblCargarArchivo))))
-                .addContainerGap(73, Short.MAX_VALUE))
+                .addGap(52, 52, 52)
+                .addComponent(lblCargarArchivo)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, Short.MAX_VALUE)
+                .addComponent(lblEscaner)
+                .addGap(63, 63, 63))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(78, 78, 78)
+                .addComponent(btnCargarArchivo, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnEscaner, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(88, 88, 88))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(38, Short.MAX_VALUE)
-                .addComponent(btnCargarArchivo, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnCargarArchivo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnEscaner, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(lblCargarArchivo)
-                .addGap(37, 37, 37)
-                .addComponent(btnEscaner, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(lblEscaner)
-                .addGap(52, 52, 52))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblCargarArchivo)
+                    .addComponent(lblEscaner))
+                .addGap(14, 14, 14))
         );
 
         pack();
@@ -94,21 +92,30 @@ public class InterfazGrafica extends javax.swing.JFrame {
         
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos Lexicos", "flex");
+        chooser.setFileFilter(filter);
+        int seleccion  = chooser.showOpenDialog(this);
         
-        chooser.showOpenDialog(this);
-        
-        if(chooser.getSelectedFile() != null)
-        {
-            ruta = chooser.getSelectedFile().getAbsolutePath();
-            nombre = chooser.getSelectedFile().getName();
+        if(seleccion == JFileChooser.APPROVE_OPTION){
             
-            File archivo = new File(ruta);
-            
-            if(archivo.exists()){
-                jflex.Main.generate(archivo);
-            }
-        } 
+            if(chooser.getSelectedFile() != null)
+            {
+                ruta = chooser.getSelectedFile().getAbsolutePath();
+                nombre = chooser.getSelectedFile().getName();
+
+                File archivo = new File(ruta);
+
+                if(!archivo.exists()){
+                    jflex.Main.generate(archivo);
+                }else{
+                    archivo.delete();
+                    archivo = new File(ruta);
+                    jflex.Main.generate(archivo);
+                }
+            } 
+        }
         
+               
     }//GEN-LAST:event_btnCargarArchivoActionPerformed
 
     public static void main(String args[]) {
