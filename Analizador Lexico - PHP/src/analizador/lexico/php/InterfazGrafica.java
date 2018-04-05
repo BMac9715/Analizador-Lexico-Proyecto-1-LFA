@@ -1,12 +1,18 @@
 
 package analizador.lexico.php;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
@@ -24,7 +30,8 @@ public class InterfazGrafica extends javax.swing.JFrame {
         nombre = "";
         
         //Componentes
-        btnEscaner.setEnabled(false);
+        this.setLocationRelativeTo(null);
+        btnAnalizar.setEnabled(false);
     }
 
     /**
@@ -40,6 +47,8 @@ public class InterfazGrafica extends javax.swing.JFrame {
         btnEscaner = new javax.swing.JButton();
         lblCargarArchivo = new javax.swing.JLabel();
         lblEscaner = new javax.swing.JLabel();
+        btnAnalizar = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -49,38 +58,62 @@ public class InterfazGrafica extends javax.swing.JFrame {
             }
         });
 
+        btnEscaner.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEscanerActionPerformed(evt);
+            }
+        });
+
         lblCargarArchivo.setText("Compilar Archivo Lexer");
 
-        lblEscaner.setText("Escanear archivo PHP");
+        lblEscaner.setText("Cargar Archivo PHP");
+
+        btnAnalizar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAnalizarActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Analizar Archivo");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(52, 52, 52)
-                .addComponent(lblCargarArchivo)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, Short.MAX_VALUE)
-                .addComponent(lblEscaner)
-                .addGap(63, 63, 63))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(78, 78, 78)
-                .addComponent(btnCargarArchivo, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnEscaner, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(88, 88, 88))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(38, 38, 38)
+                        .addComponent(btnCargarArchivo, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(77, 77, 77)
+                        .addComponent(btnEscaner, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(lblCargarArchivo)
+                        .addGap(42, 42, 42)
+                        .addComponent(lblEscaner)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnAnalizar, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
+                .addGap(34, 34, 34))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnCargarArchivo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnEscaner, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(btnAnalizar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnCargarArchivo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnEscaner, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblCargarArchivo)
-                    .addComponent(lblEscaner))
+                    .addComponent(lblEscaner)
+                    .addComponent(jLabel1))
                 .addGap(14, 14, 14))
         );
 
@@ -101,22 +134,154 @@ public class InterfazGrafica extends javax.swing.JFrame {
             if(chooser.getSelectedFile() != null)
             {
                 ruta = chooser.getSelectedFile().getAbsolutePath();
-                nombre = chooser.getSelectedFile().getName();
 
                 File archivo = new File(ruta);
 
-                if(!archivo.exists()){
-                    jflex.Main.generate(archivo);
-                }else{
-                    archivo.delete();
-                    archivo = new File(ruta);
-                    jflex.Main.generate(archivo);
+                if(archivo.exists()){
+                    
+                    try{
+                        //Compilar el archivo .Flex
+                        jflex.Main.generate(archivo);
+                        
+                        JOptionPane.showMessageDialog(null,
+                        "El archivo (.flex) ha compilado correctamente.",
+                        "Aviso",JOptionPane.INFORMATION_MESSAGE);
+                    }
+                    catch(Exception e)
+                    {
+                        JOptionPane.showMessageDialog(null,
+                        "No se ha podido compilar el archivo (.flex).",
+                        "ERROR",JOptionPane.ERROR_MESSAGE);
+                    }                  
+                }
+                else{
+                    JOptionPane.showMessageDialog(null,
+                    "El archivo seleccionado no puede ser encontrado.",
+                    "ERROR",JOptionPane.ERROR_MESSAGE);
                 }
             } 
         }
         
                
     }//GEN-LAST:event_btnCargarArchivoActionPerformed
+
+    private void btnEscanerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEscanerActionPerformed
+        
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos PHP", "php", "txt");
+        chooser.setFileFilter(filter);
+        int seleccion  = chooser.showOpenDialog(this);
+        
+        if(seleccion == JFileChooser.APPROVE_OPTION){
+            
+            if(chooser.getSelectedFile() != null)
+            {
+                ruta = chooser.getSelectedFile().getAbsolutePath();
+                nombre = chooser.getSelectedFile().getName();
+
+                File archivo = new File(ruta);
+
+                if(archivo.exists()){
+                    
+                    try{              
+                        JOptionPane.showMessageDialog(null,
+                        "El archivo se ha cargado correctamente.",
+                        "Información",JOptionPane.INFORMATION_MESSAGE);
+                        
+                        btnAnalizar.setEnabled(true);
+                    }
+                    catch(Exception e)
+                    {
+                        JOptionPane.showMessageDialog(null,
+                        "No se ha podido cargar el archivo. \nError: " + e.getMessage(),
+                        "ERROR",JOptionPane.ERROR_MESSAGE);
+                    }                  
+                }
+                else{
+                    JOptionPane.showMessageDialog(null,
+                    "El archivo seleccionado no puede ser encontrado.",
+                    "ERROR",JOptionPane.ERROR_MESSAGE);
+                }
+            } 
+        }           
+    }//GEN-LAST:event_btnEscanerActionPerformed
+
+    private void btnAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarActionPerformed
+        
+        ArrayList<String> aux = null;
+        ArrayList<String> code = null;
+        
+        //Cargar el archivo de la ruta 
+        BufferedReader reader = null;
+        try {
+            //Ruta del archivo especificado por el usuario
+            reader = new BufferedReader(new FileReader(ruta));
+            LexicalScannerPHP lexer = new LexicalScannerPHP(reader);
+ 
+            while(lexer.yylex() != null){
+               
+            }
+            
+            aux = lexer.errores;
+            code = lexer.tokens;
+            reader.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(InterfazGrafica.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(InterfazGrafica.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+        //Una vez finalizado el analisis verificamos si el archivo es correcto o  no
+ 
+        String result = "";
+        
+        if(aux.size() > 0){
+            //Hay errores
+            for(int i = 0; i < aux.size(); i++){
+                
+                if(i == aux.size() - 1){
+                    result += aux.get(i);
+                }else{
+                    result += aux.get(i) + "\n";
+                }          
+            }
+            
+            //Crear el archivo de salida
+            File file = new File("output.txt");
+            
+            try {
+                FileWriter writer = new FileWriter(file);
+                BufferedWriter bw = new BufferedWriter(writer);
+                bw.write(result);
+                bw.close();
+            } catch (IOException ex) {
+                Logger.getLogger(InterfazGrafica.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        }
+        else{
+            //NO hay errores
+            
+            for(int i = 0; i < code.size(); i++){
+                result += aux.get(i);
+            }
+            
+            //Crear el archivo de salida
+            File file = new File(nombre);
+            
+            try {
+                FileWriter writer = new FileWriter(file);
+                BufferedWriter bw = new BufferedWriter(writer);
+                bw.write(result);
+                bw.close();
+            } catch (IOException ex) {
+                Logger.getLogger(InterfazGrafica.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+    }//GEN-LAST:event_btnAnalizarActionPerformed
 
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
@@ -151,8 +316,10 @@ public class InterfazGrafica extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAnalizar;
     private javax.swing.JButton btnCargarArchivo;
     private javax.swing.JButton btnEscaner;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel lblCargarArchivo;
     private javax.swing.JLabel lblEscaner;
     // End of variables declaration//GEN-END:variables

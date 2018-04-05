@@ -1,36 +1,33 @@
 /* Codigo del usuario */
+
 package analizador.lexico.php;
 
-import static analizador.lexico.php.Token.*;
-
 //Librerias JAVA
-import java.io.BufferedWriter.*;
-import java.io.FileWriter.*;
-import java.io.IOException.*;
-import java.util.ArrayList.*;
+
+import java.util.ArrayList;
 
 %%
 /* Opciones y declaraciones */
 %class LexicalScannerPHP
 %unicode
+%standalone
 %line
 %column
 %ignorecase
 %type String
 
-
 //Codigo Java
 
 %init{ 
-this.tokens = new ArrayList();
-this.errores = new ArrayList();
+this.tokens = new ArrayList<String>();
+this.errores = new ArrayList<String>();
 this.fin = false;
 %init}
 
 %{
 
-public ArrayList tokens; /* our variable for storing token's info that will be the output */
-public ArrayList errores;
+public ArrayList<String> tokens; /* our variable for storing token's info that will be the output */
+public ArrayList<String> errores;
 public boolean fin;
 
 private String tokenRecordSet(String token){
@@ -44,11 +41,11 @@ private String tokenRecordSet(String token){
 //Macro Definition
 
 //SIMBOLOS QUE UTILIZA PHP
-Simbolos = "{" | "}" | ":" | ";" | "," | "(" | ")" | "." | "@" | "<>"
+Simbolos = "{" | "}" | ":" | ";" | "," | "(" | ")" | "." | "@" | "<>" | "[" | "]"
 
 //ESPACIOS Y SALTOS
 
-Espacios = (" ") | (\x09)
+Espacios = (" ") | (\t)
 Saltos = (\n) | (\r) | (\n\r)
 
 //PALABRAS RESERVADAS
@@ -84,7 +81,7 @@ Reales = {Lnum} | {Dnum} | {Exponente}
 Logicos = "true" | "false"
 
 /*  Cadenas */
-CadenasSimple = [\'][\x20-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]{0,256}[\']
+CadenasSimple = ['][\x20-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]{0,256}[']
 CadenasDobles = [\"][\x20-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]{0,256}[\"]
 Cadenas = {CadenasSimple} | {CadenasDobles}
 
@@ -99,7 +96,7 @@ Asignacion = "="
 OpBitaBit = "&" | "|" | "^" | "~" | "<<" | ">>"
 OpComparacion = "==" | "===" | "!=" | "!==" | "<" | ">" | "<=" | ">=" | "<=>" | "??"
 OpIncremento = "++" | "--"
-OpCompuestos = {OpAritmeticos}{Asignacion} | {OpBitaBit}{Asignacion} | {Concatenacion}{Asignacion}
+OpCompuestos = {OpAritmeticos}{Asignacion} | {OpBitaBit}{Asignacion} | ("."){Asignacion}
 
 Operadores = {OpAritmeticos} | {OpLogicos} | {Asignacion} | {OpBitaBit} | {OpComparacion} | {OpIncremento} | {OpCompuestos}
 
@@ -168,4 +165,4 @@ RecordSet = [\$]("recordset[")({CadenasSimple})("]")
 
 .                           {this.errores.add("ERROR: [" + yyline + "," + yycolumn + "] Token: " + yytext());}
 
-<< EOF >>                   {this.fin = true}
+<<EOF>>                     {this.fin = true;}
