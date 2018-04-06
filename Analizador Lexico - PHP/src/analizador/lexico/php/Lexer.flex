@@ -152,9 +152,18 @@ SentenciasControl = ("break")|("continue")|("return")|("declare")|("include")|("
 EstructurasControl = ({EstructuraIf}|{CicloWhile}|{CicloDoWhile}|{CicloFor}|{CicloForeach}|{EstructuraSwitch}|{SentenciasControl})
 
 /*	Comentarios	*/
-Texto = [\x20-\xff\x09\x0D\x0A\x0B\x1B\x0C]*
-Texto1 = [\x20-\xff\x09\x0D\x0B\x1B\x0C]*
-Comentarios = (("/*")({Texto})("*/"))|(("//")({Texto1})([\x0A]?))|(("#")({Texto1})([\x0A]?))
+Texto2 = [\x20-\x29\x2B-\x2E\x30-\xff\x09\x0D\x0B\x1B\x0C]*
+Comentarios = (("#")({Texto2})([("*/")|(\x0A)]?))|{Comment}
+
+/* comments */
+LineTerminator = \r|\n|\r\n
+InputCharacter = [^\r\n]
+WhiteSpace     = {LineTerminator} | [ \t\f]
+Comment = {TraditionalComment} | {EndOfLineComment} 
+TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
+// Comment can be the last line of the file, without line terminator.
+EndOfLineComment     = "//" {InputCharacter}* {LineTerminator}?
+CommentContent       = ( [^*] | \*+ [^/*] )*
 
 /*  Campo de acceso a base de datos */
 RecordSet = ([\$])("recordset[")({CadenasSimple})("]")
