@@ -23,7 +23,7 @@ class Yytoken{
     }
 
     public String toString(){
-        return "Token: No."+numToken+": "+token+ " ["+linea+","+columna+"]";
+        return "Token No."+numToken+": "+ token+ "\t["+linea+","+columna+"]";
     }
 }
 
@@ -2635,7 +2635,7 @@ public class LexicalScannerPHP {
   /* user code: */
 
 public ArrayList<String> tokens; /* our variable for storing token's info that will be the output */
-public ArrayList<String> errores;
+public ArrayList<Yytoken> errores;
 private int numeroTokens;
 
 private String tokenRecordSet(String token){
@@ -2663,7 +2663,7 @@ private String tokenMinuscula(String token){
    */
   public LexicalScannerPHP(java.io.Reader in) {
   this.tokens = new ArrayList<String>();
-this.errores = new ArrayList<String>();
+this.errores = new ArrayList<Yytoken>();
 this.numeroTokens = 0;
     this.zzReader = in;
   }
@@ -3030,7 +3030,7 @@ this.numeroTokens = 0;
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1: 
-            { this.errores.add("ERROR: [" + yyline + "," + yycolumn + "] Token: " + yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);
+            { this.errores.add(new Yytoken(numeroTokens++, yytext(), yyline, yycolumn)); return new Yytoken(numeroTokens++, yytext(), yyline, yycolumn);
             }
           case 6: break;
           case 2: 

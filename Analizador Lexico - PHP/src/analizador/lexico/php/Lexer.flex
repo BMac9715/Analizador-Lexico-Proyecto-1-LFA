@@ -21,7 +21,7 @@ class Yytoken{
     }
 
     public String toString(){
-        return "Token: No."+numToken+": "+token+ " ["+linea+","+columna+"]";
+        return "Token No."+numToken+": "+ token+ "\t["+linea+","+columna+"]";
     }
 }
 
@@ -40,14 +40,14 @@ class Yytoken{
 
 %init{ 
 this.tokens = new ArrayList<String>();
-this.errores = new ArrayList<String>();
+this.errores = new ArrayList<Yytoken>();
 this.numeroTokens = 0;
 %init}
 
 %{
 
 public ArrayList<String> tokens; /* our variable for storing token's info that will be the output */
-public ArrayList<String> errores;
+public ArrayList<Yytoken> errores;
 private int numeroTokens;
 
 private String tokenRecordSet(String token){
@@ -192,4 +192,4 @@ RecordSet = ([\$])("recordset[")({CadenasSimple})("]")
 {RecordSet}                 {numeroTokens++; this.tokens.add(this.tokenRecordSet(yytext())); return new Yytoken(numeroTokens, this.tokenRecordSet(yytext()), yyline, yycolumn);}
 {Identificador}             {numeroTokens++; this.tokens.add(yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
 
-.                           {this.errores.add("ERROR: [" + yyline + "," + yycolumn + "] Token: " + yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+.                           {this.errores.add(new Yytoken(numeroTokens++, yytext(), yyline, yycolumn)); return new Yytoken(numeroTokens++, yytext(), yyline, yycolumn);}
