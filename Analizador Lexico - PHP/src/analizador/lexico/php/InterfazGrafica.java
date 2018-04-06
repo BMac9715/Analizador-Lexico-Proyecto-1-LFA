@@ -32,6 +32,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
         //Componentes
         this.setLocationRelativeTo(null);
         btnAnalizar.setEnabled(false);
+        btnCargarArchivo.setEnabled(false);
     }
 
     /**
@@ -57,6 +58,8 @@ public class InterfazGrafica extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("MiniPHP");
+        setResizable(false);
 
         btnCargarArchivo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/compilador.png"))); // NOI18N
         btnCargarArchivo.addActionListener(new java.awt.event.ActionListener() {
@@ -72,7 +75,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
             }
         });
 
-        lblCargarArchivo.setText("Compilar Archivo Lexer");
+        lblCargarArchivo.setText("Compilar Archivo Flex");
 
         lblEscaner.setText("Cargar Archivo PHP");
 
@@ -130,7 +133,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
                                 .addComponent(btnCargarArchivo, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(9, 9, 9)
                                 .addComponent(jLabel2)
@@ -167,6 +170,8 @@ public class InterfazGrafica extends javax.swing.JFrame {
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(20, 20, 20))
         );
+
+        lblCargarArchivo.getAccessibleContext().setAccessibleName("Compilar Archivo Flex");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
