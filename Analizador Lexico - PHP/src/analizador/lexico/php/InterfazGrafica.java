@@ -141,7 +141,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
                     
                     try{
                         //Compilar el archivo .Flex
-                        jflex.Main.generate(archivo);
+                        jflex.Main.main(new String[]{ruta});
                         
                         JOptionPane.showMessageDialog(null,
                         "El archivo (.flex) ha compilado correctamente.",
@@ -209,7 +209,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
 
     private void btnAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarActionPerformed
         
-        ArrayList<String> aux = null;
+        ArrayList<String> errores = null;
         ArrayList<String> code = null;
         
         //Cargar el archivo de la ruta 
@@ -218,12 +218,18 @@ public class InterfazGrafica extends javax.swing.JFrame {
             //Ruta del archivo especificado por el usuario
             reader = new BufferedReader(new FileReader(ruta));
             LexicalScannerPHP lexer = new LexicalScannerPHP(reader);
- 
-            while(lexer.yylex() != null){
-               
+            
+            Yytoken token = null;
+            
+            while(true){
+                token = lexer.nextToken();
+                
+                if(token==null){
+                    break;
+                }
             }
             
-            aux = lexer.errores;
+            errores = lexer.errores;
             code = lexer.tokens;
             reader.close();
         } catch (FileNotFoundException ex) {
@@ -237,14 +243,14 @@ public class InterfazGrafica extends javax.swing.JFrame {
  
         String result = "";
         
-        if(aux.size() > 0){
+        if(errores.size() > 0){
             //Hay errores
-            for(int i = 0; i < aux.size(); i++){
+            for(int i = 0; i < errores.size(); i++){
                 
-                if(i == aux.size() - 1){
-                    result += aux.get(i);
+                if(i == errores.size() - 1){
+                    result += errores.get(i);
                 }else{
-                    result += aux.get(i) + "\n";
+                    result += errores.get(i) + "\n";
                 }          
             }
             
@@ -265,7 +271,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
             //NO hay errores
             
             for(int i = 0; i < code.size(); i++){
-                result += aux.get(i);
+                result += code.get(i);
             }
             
             //Crear el archivo de salida
