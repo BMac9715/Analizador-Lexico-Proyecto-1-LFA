@@ -245,6 +245,14 @@ public class InterfazGrafica extends javax.swing.JFrame {
         
         if(errores.size() > 0){
             //Hay errores
+            
+            JOptionPane.showMessageDialog(null,
+                    "El archivo analizado contiene errores léxicos, el programa\n"
+                    +"generará un archivo con los errores encontrados.\n\n"
+                    +"Por favor eliga un nombre y una ruta en la cual desee\n"
+                    +"almacenar dicho archivo",
+                    "Aviso",JOptionPane.INFORMATION_MESSAGE);
+            
             for(int i = 0; i < errores.size(); i++){
                 
                 if(i == errores.size() - 1){
@@ -255,38 +263,111 @@ public class InterfazGrafica extends javax.swing.JFrame {
             }
             
             //Crear el archivo de salida
-            File file = new File("output.txt");
+            File file = new File("output.err");
             
-            try {
-                FileWriter writer = new FileWriter(file);
-                BufferedWriter bw = new BufferedWriter(writer);
-                bw.write(result);
-                bw.close();
-            } catch (IOException ex) {
-                Logger.getLogger(InterfazGrafica.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            
+            JFileChooser chooser = new JFileChooser();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivo de errores", "err");
+            chooser.setFileFilter(filter);     
+            chooser.setSelectedFile(file);
+  
+            int selection  = chooser.showSaveDialog(this);
+
+            if(selection == JFileChooser.APPROVE_OPTION)
+            {
+                try {
+                    
+                    String name = chooser.getSelectedFile().getAbsolutePath();
+                   
+                    if(!name.contains(".err")){
+                        name = name + ".err";
+                    }
+                                 
+                    file = new File(name);
+                    FileWriter writer = null;
+                    BufferedWriter bw = null;
+                    
+                    if(file.exists()){
+                        file.delete();
+                        writer = new FileWriter(file);
+                        bw = new BufferedWriter(writer);
+                        bw.write(result);
+                        bw.close();
+                    }else{
+                        writer = new FileWriter(file);
+                        bw = new BufferedWriter(writer);
+                        bw.write(result);
+                        bw.close();                     
+                    }
+                    
+                    JOptionPane.showMessageDialog(null,
+                    "El archivo se ha guardado correctamente.",
+                    "Información",JOptionPane.INFORMATION_MESSAGE);
+                                       
+                } catch (IOException ex) {
+                    Logger.getLogger(InterfazGrafica.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }  
         }
         else{
             //NO hay errores
             
+            JOptionPane.showMessageDialog(null,
+                    "El archivo ingresado pertenece al lenguaje PHP.\n\n"
+                    +"Por favor eliga un nombre y una ruta en la cual desee\n"
+                    +"almacenar el archivo de salida.",
+                    "Información",JOptionPane.INFORMATION_MESSAGE);
+                
             for(int i = 0; i < code.size(); i++){
                 result += code.get(i);
             }
             
             //Crear el archivo de salida
             File file = new File(nombre);
-            
-            try {
-                FileWriter writer = new FileWriter(file);
-                BufferedWriter bw = new BufferedWriter(writer);
-                bw.write(result);
-                bw.close();
-            } catch (IOException ex) {
-                Logger.getLogger(InterfazGrafica.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        
+  
+            JFileChooser chooser = new JFileChooser();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivo de salida", "out");
+            chooser.setFileFilter(filter);     
+            chooser.setSelectedFile(file);
+  
+            int selection  = chooser.showSaveDialog(this);
+
+            if(selection == JFileChooser.APPROVE_OPTION)
+            {
+                try {
+                    String name = chooser.getSelectedFile().getAbsolutePath();
+                   
+                    if(!name.contains(".out")){
+                        name = name + ".out";
+                    }
+                    
+                    file = new File(name);
+                    
+                    
+                    FileWriter writer = null;
+                    BufferedWriter bw = null;
+                    
+                    if(file.exists()){
+                        file.delete();
+                        writer = new FileWriter(file);
+                        bw = new BufferedWriter(writer);
+                        bw.write(result);
+                        bw.close();
+                    }else{
+                        writer = new FileWriter(file);
+                        bw = new BufferedWriter(writer);
+                        bw.write(result);
+                        bw.close();                     
+                    }
+                    
+                    JOptionPane.showMessageDialog(null,
+                    "El archivo se ha guardado correctamente.",
+                    "Información",JOptionPane.INFORMATION_MESSAGE);
+                                       
+                } catch (IOException ex) {
+                    Logger.getLogger(InterfazGrafica.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }      
+        }   
     }//GEN-LAST:event_btnAnalizarActionPerformed
 
     public static void main(String args[]) {

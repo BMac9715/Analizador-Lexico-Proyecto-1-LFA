@@ -33,6 +33,7 @@ class Yytoken{
 %public
 %function nextToken
 %unicode
+%caseless
 %ignorecase
 %line
 %column
@@ -64,11 +65,13 @@ private String tokenRecordSet(String token){
 }
 
 private String tokenMayuscula(String token){
-    return token.toUpperCase();
+    String result = token.toUpperCase();
+    return result; 
 }
 
 private String tokenMinuscula(String token){
-    return token.toLowerCase();
+    String result = token.toLowerCase();
+    return result;
 }
 
 %}
@@ -107,8 +110,8 @@ Reales = ({Lnum})|({Dnum})|({Exponente})
 Logicos = ("true")|("false")
 
 /*  Cadenas */
-CadenasSimple = ['][\x20-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]{0,256}[']
-CadenasDobles = [\"][\x20-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]{0,256}[\"]
+CadenasSimple = (')([\x20-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]){0,256}(')
+CadenasDobles = (\")([\x20-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]){0,256}(\")
 Cadenas = ({CadenasSimple})|({CadenasDobles})
 
 //OPERADORES 
@@ -165,24 +168,24 @@ RecordSet = ([\$])("recordset[")({CadenasSimple})("]")
 
 /* Lexical rules */
 
-{Integer}                   {this.tokens.add(yytext());}
-{Reales}                    {this.tokens.add(yytext());}
-{Logicos}                   {this.tokens.add(this.tokenMayuscula(yytext()));}
-{Cadenas}                   {this.tokens.add(yytext());}
-{Operadores}                {this.tokens.add(yytext());}
-{Identificador}             {this.tokens.add(yytext());}
-{Variables}                 {this.tokens.add(yytext());}
+{PalabrasReservadas}        {this.tokens.add(this.tokenMinuscula(yytext()));}
 {VariablesSuperGlobales}    {this.tokens.add(this.tokenMayuscula(yytext()));}
 {VariablesGlobalesMin}      {this.tokens.add(this.tokenMinuscula(yytext()));}
 {ConstantesReservadas}      {this.tokens.add(this.tokenMayuscula(yytext()));}
 {EstructurasControl}        {this.tokens.add(this.tokenMinuscula(yytext()));}
+{Etiquetas}                 {this.tokens.add(this.tokenMinuscula(yytext()));}
+{Simbolos}                  {this.tokens.add(yytext());}
+{Operadores}                {this.tokens.add(yytext());}
+{Integer}                   {this.tokens.add(yytext());}
+{Reales}                    {this.tokens.add(yytext());}
+{Logicos}                   {this.tokens.add(this.tokenMayuscula(yytext()));}
+{Cadenas}                   {this.tokens.add(yytext());}
+{Variables}                 {this.tokens.add(yytext());}
 {Comentarios}               {this.tokens.add(yytext());}
 {Espacios}                  {this.tokens.add(yytext());}
 {Saltos}                    {this.tokens.add(yytext());}
 {Nulo}                      {this.tokens.add(this.tokenMayuscula(yytext()));}
-{PalabrasReservadas}        {this.tokens.add(this.tokenMinuscula(yytext()));}
-{Etiquetas}                 {this.tokens.add(this.tokenMinuscula(yytext()));}
-{Simbolos}                  {this.tokens.add(yytext());}
 {RecordSet}                 {this.tokens.add(this.tokenRecordSet(yytext()));}
+{Identificador}             {this.tokens.add(this.tokenMayuscula(yytext()));}
 
 .                           {this.errores.add("ERROR: [" + yyline + "," + yycolumn + "] Token: " + yytext());}
