@@ -1,6 +1,6 @@
 # MiniPHP
 
-##Descripcion
+## Descripcion
 
 **MiniPHP** Es un escáner léxico para el lenguaje de programación PHP (Hypertext Preprocessor).
 Su función basicamente es reconocer tokens segun el orden de lectura del archivo, si el token es 
