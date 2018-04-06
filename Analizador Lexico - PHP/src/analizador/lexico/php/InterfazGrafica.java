@@ -327,7 +327,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
             File file = new File("Errores-"+nombre+".out");
             
             JFileChooser chooser = new JFileChooser();
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivo de errores", "err");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivo de errores", "out");
             chooser.setFileFilter(filter);     
             chooser.setSelectedFile(file);
   
@@ -339,8 +339,8 @@ public class InterfazGrafica extends javax.swing.JFrame {
                     
                     String name = chooser.getSelectedFile().getAbsolutePath();
                    
-                    if(!name.contains(".err")){
-                        name = name + ".err";
+                    if(!name.contains(".out")){
+                        name = name + ".out";
                     }
                                  
                     file = new File(name);
@@ -363,6 +363,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
                     txtAreaErrores.setText(null);
                     txtAreaErrores.setText(result);
                     txtAreaErrores.setCaretPosition(0);
+                    txtAreaContenido.setText(null);
                     
                     JOptionPane.showMessageDialog(null,
                     "El archivo se ha guardado correctamente.",
@@ -427,6 +428,7 @@ public class InterfazGrafica extends javax.swing.JFrame {
                     txtAreaContenido.setText(null);
                     txtAreaContenido.setText(result);
                     txtAreaContenido.setCaretPosition(0);
+                    txtAreaErrores.setText(null);
                     
                     JOptionPane.showMessageDialog(null,
                     "El archivo se ha guardado correctamente.",

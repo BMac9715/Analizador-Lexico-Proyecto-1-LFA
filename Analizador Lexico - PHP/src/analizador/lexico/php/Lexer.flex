@@ -21,7 +21,7 @@ class Yytoken{
     }
 
     public String toString(){
-        return "Token No."+numToken+": "+ token+ "\t["+linea+","+columna+"]";
+        return "Token No."+numToken+": Token: "+ token+ "\t[Linea: "+linea+", Columna: "+columna+"]";
     }
 }
 
@@ -81,7 +81,7 @@ Saltos = (\n)|(\r)|(\n\r)
 //PALABRAS RESERVADAS
 
 Nulo = "null"
-Etiquetas = ("<?php")|("?>")
+Etiquetas = ("<?php")|("?>")|("<?")|("</")
 PalabrasReservadas = ("__halt_compiler")|("abstract")|("array")|("as")|("callable")|("catch")|("class")|("clone")|("const")|("die")|("echo")|("empty")|("enddeclare")|("eval")|("exit")|("extends")|("final")|("finally")|("function")|("global")|("goto")|("implements")|("include_once")|("instanceof")|("insteadof")|("interface")|("isset")|("list")|("namespace")|("new")|("print")|("private")|("protected")|("public")|("require_once")|("static")|("throw")|("trait")|("try")|("unset")|("use")|("var")|("yield")
 
 //TIPOS
@@ -91,6 +91,7 @@ Octal = "0"[0-7]+
 Binario = "0b"[01]+
 Hexadecimal = "0"[xX][0-9a-fA-F]+
 Integer = ([+-]?{Decimal})|([+-]?{Octal})|([+-]?{Binario})|([+-]?{Hexadecimal})
+ErrorEnteroMasLetra = ("1a")
 
 /*  Reales  */
 Lnum = [0-9]+
@@ -102,9 +103,8 @@ Reales = ({Lnum})|({Dnum})|({Exponente})
 Logicos = ("true")|("false")
 
 /*  Cadenas */
-CadenasSimple = (["'"])([\x20-\x26\x28-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]{0,256})(["'"])
-CadenasDobles = ([\"])([\x20\x21\x23-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]{0,256})([\"])
-Cadenas = ({CadenasSimple})|({CadenasDobles})
+Cadenas = ('([^'\\]|\\.)*')|(\"([^\"\\]|\\.)*\")
+CadenaSimple = ('([^'\\]|\\.)*')
 
 //OPERADORES 
 /*  Aritmeticos */
@@ -117,6 +117,7 @@ OpBitaBit = ("&")|("|")|("^")|("~")|("<<")|(">>")
 OpComparacion = ("==")|("===")|("!=")|("!==")|("<")|(">")|("<=")|(">=")|("<=>")|("??")
 OpIncremento = ("++")|("--")
 Operadores = ({OpAritmeticos}|{OpLogicos}|{Asignacion}|{OpBitaBit}|{OpComparacion}|{OpIncremento})
+ErrorOperador = "=!="
 
 /*  CONSTANTES  */
 Identificador = [a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
@@ -159,14 +160,16 @@ Comentarios = (("#")({Texto2})([("*/")|(\x0A)]?))|{Comment}
 LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
 WhiteSpace     = {LineTerminator} | [ \t\f]
-Comment = {TraditionalComment} | {EndOfLineComment} 
+Comment = {TraditionalComment} | {EndOfLineComment} | {DocumentationComment}
 TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 // Comment can be the last line of the file, without line terminator.
 EndOfLineComment     = "//" {InputCharacter}* {LineTerminator}?
+DocumentationComment = "/**" {CommentContent} "*"+ "/"
 CommentContent       = ( [^*] | \*+ [^/*] )*
+ErrorMultiLinea     = ["/*"]~(\n)
 
 /*  Campo de acceso a base de datos */
-RecordSet = ([\$])("recordset[")({CadenasSimple})("]")
+RecordSet = ({Variables})("[")({CadenaSimple})("]")
 
 %%
 
@@ -192,4 +195,7 @@ RecordSet = ([\$])("recordset[")({CadenasSimple})("]")
 {RecordSet}                 {numeroTokens++; this.tokens.add(this.tokenRecordSet(yytext())); return new Yytoken(numeroTokens, this.tokenRecordSet(yytext()), yyline, yycolumn);}
 {Identificador}             {numeroTokens++; this.tokens.add(yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
 
-.                           {this.errores.add(new Yytoken(numeroTokens++, yytext(), yyline, yycolumn)); return new Yytoken(numeroTokens++, yytext(), yyline, yycolumn);}
+{ErrorEnteroMasLetra}       {this.errores.add(new Yytoken(numeroTokens++, yytext(), yyline, yycolumn)); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+{ErrorOperador}             {this.errores.add(new Yytoken(numeroTokens++, yytext(), yyline, yycolumn)); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+{ErrorMultiLinea}           {this.errores.add(new Yytoken(numeroTokens++, yytext(), yyline, yycolumn)); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+.                           {this.errores.add(new Yytoken(numeroTokens++, yytext(), yyline, yycolumn)); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}

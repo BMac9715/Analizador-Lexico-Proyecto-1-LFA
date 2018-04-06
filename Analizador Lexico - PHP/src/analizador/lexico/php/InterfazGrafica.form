@@ -130,9 +130,6 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Compilar Archivo Flex"/>
       </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Compilar Archivo Flex"/>
-      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblEscaner">
       <Properties>
