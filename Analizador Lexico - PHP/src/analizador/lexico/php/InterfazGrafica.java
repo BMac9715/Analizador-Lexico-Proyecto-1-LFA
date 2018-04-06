@@ -226,6 +226,8 @@ public class InterfazGrafica extends javax.swing.JFrame {
                 
                 if(token==null){
                     break;
+                }else{
+                    System.out.println(token.toString());
                 }
             }
             

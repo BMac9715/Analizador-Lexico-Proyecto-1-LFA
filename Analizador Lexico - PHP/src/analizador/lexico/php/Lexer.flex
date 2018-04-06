@@ -10,20 +10,18 @@ class Yytoken{
 
     public int numToken;
     public String token;
-    public String tipo;
     public int linea;
     public int columna;
 
-    Yytoken(int numToken, String token, String tipo, int linea, int columna){
+    Yytoken(int numToken, String token, int linea, int columna){
         this.numToken = numToken;
         this.token = token;
-        this.tipo = tipo;
         this.linea = linea;
         this.columna = columna;
     }
 
     public String toString(){
-        return "Token: No."+numToken+": "+token+" Tipo: "+tipo+" ["+linea+","+columna+"]";
+        return "Token: No."+numToken+": "+token+ " ["+linea+","+columna+"]";
     }
 }
 
@@ -43,20 +41,14 @@ class Yytoken{
 %init{ 
 this.tokens = new ArrayList<String>();
 this.errores = new ArrayList<String>();
+this.numeroTokens = 0;
 %init}
-
-%eof{
-
-    for(int i = 0; i < tokens.size(); i++){
-        System.out.println(tokens.get(i));
-    }
-
-%eof}
 
 %{
 
 public ArrayList<String> tokens; /* our variable for storing token's info that will be the output */
 public ArrayList<String> errores;
+private int numeroTokens;
 
 private String tokenRecordSet(String token){
     String[] parts = token.split("'");
@@ -110,8 +102,8 @@ Reales = ({Lnum})|({Dnum})|({Exponente})
 Logicos = ("true")|("false")
 
 /*  Cadenas */
-CadenasSimple = (')([\x20-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]){0,256}(')
-CadenasDobles = (\")([\x20-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]){0,256}(\")
+CadenasSimple = (["'"])([\x20-\x26\x28-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]{0,256})(["'"])
+CadenasDobles = ([\"])([\x20\x21\x23-\xff\x0A\x0D\x09\x0B\x1B\x0C\\]{0,256})([\"])
 Cadenas = ({CadenasSimple})|({CadenasDobles})
 
 //OPERADORES 
@@ -137,8 +129,10 @@ VariablesSuperGlobales = ([\$])(("GLOBALS")|("_SERVER")|("_GET")|("_POST")|("_FI
 VariablesGlobalesMin = ([\$])(("php_errormsg")|("http_response_header")|("argc")|("argv"))
 
 /*  Constantes predefinidas */
-ConstantesReservadas = ("__LINE__")|("__FILE__")|("__DIR__")|("__FUNCTION__")|("__CLASS__")|("__TRAIT__")|("__METHOD__")|("__NAMESPACE__")
-
+ConstantesReservadas = ("__LINE__")|("__FILE__")|("__DIR__")|("__FUNCTION__")|("__CLASS__")|("__TRAIT__")|("__METHOD__")|("__NAMESPACE__")|("__COMPILER_HALT_OFFSET__")
+ConstantesDefinidas1 = ("PHP_VERSION")|("PHP_MAJOR_VERSION")|("PHP_MINOR_VERSION")|("PHP_RELEASE_VERSION")|("PHP_VERSION_ID")|("PHP_EXTRA_VERSION")|("PHP_ZTS")|("PHP_DEBUG")|("PHP_MAXPATHLEN")|("PHP_OS")|("PHP_OS_FAMILY")|("PHP_SAPI")|("PHP_EOL")|("PHP_INT_MAX")|("PHP_INT_MIN")|("PHP_INT_SIZE")|("PHP_FLOAT_DIG")|("PHP_FLOAT_EPSILON")|("PHP_FLOAT_MIN")|("PHP_FLOAT_MAX")|("DEFAULT_INCLUDE_PATH")|("PEAR_INSTALL_DIR")|("PEAR_EXTENSION_DIR")|("PHP_EXTENSION_DIR")|("PHP_PREFIX")|("PHP_BINDIR")|("PHP_BINARY")|("PHP_MANDIR")|("PHP_LIBDIR")|("PHP_DATADIR")|("PHP_SYSCONFDIR")|("PHP_LOCALSTATEDIR")|("PHP_CONFIG_FILE_SCAN_DIR")|("PHP_CONFIG_FILE_PATH")|("PHP_SHLIB_SUFFIX")|("PHP_FD_SETSIZE")
+ConstantesDefinidas2 = ("E_ERROR")|("E_WARNING")|("E_PARSE")|("E_NOTICE")|("E_CORE_ERROR")|("E_CORE_WARNING")|("E_COMPILE_ERROR")|("E_COMPILE_WARNING")|("E_USER_ERROR")|("E_USER_WARNING")|("E_USER_NOTICE")|("E_DEPRECATED")|("E_USER_DEPRECATED")|("E_ALL")|("E_STRICT")
+ConstantesDefinidas = {ConstantesDefinidas1}|{ConstantesDefinidas2}|{ConstantesReservadas}
 /*  Estructuras de control  */
 /* If-else  */
 EstructuraIf = ("if")|("endif")|("else") 
@@ -159,7 +153,8 @@ EstructurasControl = ({EstructuraIf}|{CicloWhile}|{CicloDoWhile}|{CicloFor}|{Cic
 
 /*	Comentarios	*/
 Texto = [\x20-\xff\x09\x0D\x0A\x0B\x1B\x0C]*
-Comentarios = (("/*")({Texto})("*/"))|(("//")({Texto})([\x0A]))|(("#")({Texto})([\x0A]))
+Texto1 = [\x20-\xff\x09\x0D\x0B\x1B\x0C]*
+Comentarios = (("/*")({Texto})("*/"))|(("//")({Texto1})([\x0A]?))|(("#")({Texto1})([\x0A]?))
 
 /*  Campo de acceso a base de datos */
 RecordSet = ([\$])("recordset[")({CadenasSimple})("]")
@@ -168,24 +163,24 @@ RecordSet = ([\$])("recordset[")({CadenasSimple})("]")
 
 /* Lexical rules */
 
-{PalabrasReservadas}        {this.tokens.add(this.tokenMinuscula(yytext()));}
-{VariablesSuperGlobales}    {this.tokens.add(this.tokenMayuscula(yytext()));}
-{VariablesGlobalesMin}      {this.tokens.add(this.tokenMinuscula(yytext()));}
-{ConstantesReservadas}      {this.tokens.add(this.tokenMayuscula(yytext()));}
-{EstructurasControl}        {this.tokens.add(this.tokenMinuscula(yytext()));}
-{Etiquetas}                 {this.tokens.add(this.tokenMinuscula(yytext()));}
-{Simbolos}                  {this.tokens.add(yytext());}
-{Operadores}                {this.tokens.add(yytext());}
-{Integer}                   {this.tokens.add(yytext());}
-{Reales}                    {this.tokens.add(yytext());}
-{Logicos}                   {this.tokens.add(this.tokenMayuscula(yytext()));}
-{Cadenas}                   {this.tokens.add(yytext());}
-{Variables}                 {this.tokens.add(yytext());}
-{Comentarios}               {this.tokens.add(yytext());}
-{Espacios}                  {this.tokens.add(yytext());}
-{Saltos}                    {this.tokens.add(yytext());}
-{Nulo}                      {this.tokens.add(this.tokenMayuscula(yytext()));}
-{RecordSet}                 {this.tokens.add(this.tokenRecordSet(yytext()));}
-{Identificador}             {this.tokens.add(this.tokenMayuscula(yytext()));}
+{PalabrasReservadas}        {numeroTokens++; this.tokens.add(this.tokenMinuscula(yytext())); return new Yytoken(numeroTokens, this.tokenMinuscula(yytext()), yyline, yycolumn);}
+{VariablesSuperGlobales}    {numeroTokens++; this.tokens.add(this.tokenMayuscula(yytext())); return new Yytoken(numeroTokens, this.tokenMayuscula(yytext()), yyline, yycolumn);}
+{VariablesGlobalesMin}      {numeroTokens++; this.tokens.add(this.tokenMinuscula(yytext())); return new Yytoken(numeroTokens, this.tokenMinuscula(yytext()), yyline, yycolumn);}
+{ConstantesDefinidas}       {numeroTokens++; this.tokens.add(this.tokenMayuscula(yytext())); return new Yytoken(numeroTokens, this.tokenMayuscula(yytext()), yyline, yycolumn);}
+{EstructurasControl}        {numeroTokens++; this.tokens.add(this.tokenMinuscula(yytext())); return new Yytoken(numeroTokens, this.tokenMinuscula(yytext()), yyline, yycolumn);}
+{Etiquetas}                 {numeroTokens++; this.tokens.add(this.tokenMinuscula(yytext())); return new Yytoken(numeroTokens, this.tokenMinuscula(yytext()), yyline, yycolumn);}
+{Simbolos}                  {numeroTokens++; this.tokens.add(yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+{Operadores}                {numeroTokens++; this.tokens.add(yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+{Integer}                   {numeroTokens++; this.tokens.add(yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+{Reales}                    {numeroTokens++; this.tokens.add(yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+{Logicos}                   {numeroTokens++; this.tokens.add(this.tokenMayuscula(yytext())); return new Yytoken(numeroTokens, this.tokenMayuscula(yytext()), yyline, yycolumn);}
+{Cadenas}                   {numeroTokens++; this.tokens.add(yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+{Variables}                 {numeroTokens++; this.tokens.add(yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+{Comentarios}               {numeroTokens++; this.tokens.add(yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+{Espacios}                  {numeroTokens++; this.tokens.add(yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+{Saltos}                    {numeroTokens++; this.tokens.add(yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
+{Nulo}                      {numeroTokens++; this.tokens.add(this.tokenMayuscula(yytext())); return new Yytoken(numeroTokens, this.tokenMayuscula(yytext()), yyline, yycolumn);}
+{RecordSet}                 {numeroTokens++; this.tokens.add(this.tokenRecordSet(yytext())); return new Yytoken(numeroTokens, this.tokenRecordSet(yytext()), yyline, yycolumn);}
+{Identificador}             {numeroTokens++; this.tokens.add(yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
 
-.                           {this.errores.add("ERROR: [" + yyline + "," + yycolumn + "] Token: " + yytext());}
+.                           {this.errores.add("ERROR: [" + yyline + "," + yycolumn + "] Token: " + yytext()); return new Yytoken(numeroTokens, yytext(), yyline, yycolumn);}
